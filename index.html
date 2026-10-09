@@ -74,6 +74,25 @@ button,select,input{font:inherit;color:inherit}
 .cue{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 16px);transform:translateX(-50%);padding:5px 10px;background:var(--panel);border:1px solid var(--line);border-radius:3px;font:500 10.5px/1.2 var(--f-data);letter-spacing:.14em;text-transform:uppercase;color:#d6d1da;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .cue i{display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:50%;vertical-align:0;background:var(--cue,#a77bff);box-shadow:0 0 8px var(--cue,#a77bff)}
 
+/* Music: a small YouTube player card above the dock, loaded only when someone presses play.
+   YouTube asks for a visible player at least 200 px tall, so it never shrinks below that. */
+.seg-btns button svg{width:9px;height:9px;margin-right:6px;fill:currentColor;vertical-align:-1px}
+.music{position:fixed;z-index:4;left:16px;bottom:96px;width:356px;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 10px 32px rgba(0,0,0,.5)}
+.music-top{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;font:500 10.5px/1.2 var(--f-data);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.music-top a{margin-left:auto;color:#cfcad3;letter-spacing:.06em;text-decoration:none}
+.music-top a:hover{color:var(--ink);text-decoration:underline}
+.music-top button{appearance:none;border:0;background:transparent;color:#d6d1da;font:500 18px/1 var(--f-body);width:28px;height:24px;border-radius:2px;cursor:pointer}
+.music-top button:hover{background:rgba(255,255,255,.08)}
+.eq{display:inline-flex;align-items:flex-end;gap:2px;height:10px}
+.eq i{width:2px;height:3px;background:var(--tape)}
+.music.playing .eq i{animation:eq .9s ease-in-out infinite alternate}
+.music.playing .eq i:nth-child(2){animation-delay:-.3s}.music.playing .eq i:nth-child(3){animation-delay:-.6s}
+@keyframes eq{from{height:2px}to{height:10px}}
+.music-frame{position:relative;width:100%;aspect-ratio:16/9;min-height:200px;background:#000}
+.music-frame iframe,.music-frame>div{position:absolute;inset:0;width:100%;height:100%;border:0}
+.music-msg{margin:0;padding:8px 12px 10px;font-size:12px;line-height:1.45;color:#e2dee6;border-top:1px solid var(--line)}
+.music-msg a{color:var(--ink)}
+
 /* Seat panel */
 .panel{position:fixed;right:16px;top:calc(env(safe-area-inset-top,0px) + 16px);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:368px;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .panel::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.05;pointer-events:none}
@@ -140,6 +159,7 @@ input[type=range]{width:100%;min-width:0;accent-color:var(--tape)}
   .dock::-webkit-scrollbar{display:none}
   .seg-btns button{padding:7px 9px;font-size:11.5px}
   .hint{display:none}
+  .music{left:16px;right:16px;width:auto;top:calc(env(safe-area-inset-top,0px) + 222px);bottom:auto!important}
   .panel{left:0;right:0;top:auto;bottom:0;width:auto;max-height:58%;border-radius:10px 10px 0 0;border-left:0;border-right:0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px)}
   .sheet-toggle{display:flex;align-items:center;justify-content:center;gap:8px;flex:none;width:100%;padding:8px 0 2px;background:transparent;border:0;cursor:pointer;font:500 10px/1 var(--f-data);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   .sheet-toggle::before{content:"";width:36px;height:4px;border-radius:2px;background:var(--line-strong)}
@@ -149,7 +169,7 @@ input[type=range]{width:100%;min-width:0;accent-color:var(--tape)}
   .verdict{font-size:12.5px;margin-top:8px}
   .stats>div,.block{padding-left:16px;padding-right:16px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.music.playing .eq i{animation:none;height:8px}}
 </style>
 </head>
 <body>
@@ -169,6 +189,10 @@ input[type=range]{width:100%;min-width:0;accent-color:var(--tape)}
     <div class="seg-btns" role="group" aria-labelledby="lbl-view">
       <button type="button" id="btn-pov" aria-pressed="true">My seat</button>
       <button type="button" id="btn-over" aria-pressed="false">Stadium</button>
+    </div></div>
+  <div class="seg"><span class="seg-label" id="lbl-music">Song</span>
+    <div class="seg-btns" role="group" aria-labelledby="lbl-music">
+      <button type="button" id="btn-music" aria-pressed="false" aria-controls="musicCard"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg>Play</button>
     </div></div>
   <div class="seg"><span class="seg-label" id="lbl-zoom">Zoom</span>
     <div class="seg-btns" role="group" aria-labelledby="lbl-zoom">
@@ -244,6 +268,14 @@ input[type=range]{width:100%;min-width:0;accent-color:var(--tape)}
     </div>
   </div>
 </aside>
+
+<section class="music" id="musicCard" aria-label="Music player" hidden>
+  <div class="music-top"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="musicState">Now playing</span>
+    <a href="https://www.youtube.com/watch?v=RBaSiVjtKR4" target="_blank" rel="noopener">YouTube ↗</a>
+    <button type="button" id="musicClose" aria-label="Stop and close the music player" title="Stop and close">×</button></div>
+  <div class="music-frame"><div id="musicPlayer"></div></div>
+  <p class="music-msg" id="musicMsg" hidden></p>
+</section>
 
 <div class="tip" id="tip" hidden></div>
 <div class="loading" id="loading">Loading the stadium…</div>
@@ -1873,6 +1905,91 @@ syncButtons();
 if(/[?&]debug\b/.test(location.search)) window.__bts={state,SEC_BY_ID,SECTIONS,selectSeat,setMode,setPosture,setWeather,setLights,CROWD_N,renderer,
   setCue:(c)=>{state.cue=String(c);syncButtons();},facts:computeFacts};
 requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* Song player. Nothing from YouTube loads until someone presses Play: then the IFrame Player API
+   is fetched and the video plays in the card above the dock, on loop, from the privacy-enhanced
+   youtube-nocookie.com domain. If the API is blocked it falls back to a plain embed, and if the
+   video's owner has turned off embedding the card links to YouTube instead. */
+(function(){
+  'use strict';
+  var VIDEO_ID='RBaSiVjtKR4';
+  var btn=document.getElementById('btn-music'),card=document.getElementById('musicCard'),slot=document.getElementById('musicPlayer');
+  var msg=document.getElementById('musicMsg'),stateEl=document.getElementById('musicState'),dock=document.querySelector('.dock');
+  if(!btn||!card) return;
+  var player=null,plain=false,playing=false,apiPromise=null,startTimer=0;
+  var ICON_PLAY='<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg>';
+  var ICON_PAUSE='<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1h2v8H2zM6 1h2v8H6z"/></svg>';
+  function place(){ if(!card.hidden&&dock&&innerWidth>760) card.style.bottom=(innerHeight-dock.getBoundingClientRect().top+10)+'px'; }
+  addEventListener('resize',place);
+  function setUI(p,label){
+    playing=p; card.classList.toggle('playing',p);
+    btn.setAttribute('aria-pressed',String(p)); btn.innerHTML=p?ICON_PAUSE+'Pause':ICON_PLAY+'Play';
+    stateEl.textContent=label||(p?'Now playing':'Paused');
+  }
+  function say(html){msg.innerHTML=html;msg.hidden=!html;}
+  function loadApi(){
+    if(window.YT&&window.YT.Player) return Promise.resolve();
+    if(apiPromise) return apiPromise;
+    apiPromise=new Promise(function(res,rej){
+      var prev=window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady=function(){if(prev)prev();res();};
+      var s=document.createElement('script'); s.src='https://www.youtube.com/iframe_api'; s.async=true;
+      s.onerror=function(){apiPromise=null;rej();}; document.head.appendChild(s);
+      setTimeout(function(){rej();},8000);
+    });
+    return apiPromise;
+  }
+  function plainEmbed(){
+    plain=true;
+    var f=document.createElement('iframe');
+    f.src='https://www.youtube-nocookie.com/embed/'+VIDEO_ID+'?autoplay=1&playsinline=1&rel=0&loop=1&playlist='+VIDEO_ID;
+    f.title='BTS song on YouTube'; f.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+    slot.replaceWith(f); slot=f; setUI(true,'Playing on YouTube');
+  }
+  function create(){
+    var vars={autoplay:1,playsinline:1,rel:0,loop:1,playlist:VIDEO_ID};
+    if(/^https?:/.test(location.protocol)) vars.origin=location.origin;
+    player=new window.YT.Player(slot,{host:'https://www.youtube-nocookie.com',videoId:VIDEO_ID,width:'100%',height:'100%',playerVars:vars,
+      events:{
+        onReady:function(e){e.target.setVolume(80);e.target.playVideo();},
+        onStateChange:function(e){
+          var S=window.YT.PlayerState;
+          if(e.data===S.PLAYING){clearTimeout(startTimer);say('');setUI(true);}
+          else if(e.data===S.BUFFERING) setUI(true,'Loading…');
+          else if(e.data===S.PAUSED||e.data===S.ENDED) setUI(false);
+        },
+        onError:function(e){
+          clearTimeout(startTimer); setUI(false,'Can’t play here');
+          say(e.data===101||e.data===150?'The video’s owner doesn’t allow it to play on other sites. <a href="https://www.youtube.com/watch?v='+VIDEO_ID+'" target="_blank" rel="noopener">Watch it on YouTube ↗</a>'
+            :'YouTube couldn’t play this video. <a href="https://www.youtube.com/watch?v='+VIDEO_ID+'" target="_blank" rel="noopener">Try it on YouTube ↗</a>');
+        }
+      }});
+    slot=null;
+  }
+  function open(){
+    card.hidden=false; place(); setUI(true,'Loading…');
+    // phones may block sound until the video itself is tapped
+    startTimer=setTimeout(function(){if(!plain&&player&&!(player.getPlayerState&&player.getPlayerState()===1)) say('If it doesn’t start, tap play in the video.');},3500);
+    loadApi().then(create,plainEmbed);
+  }
+  btn.addEventListener('click',function(){
+    if(!player&&!plain){open();return;}
+    if(plain){ // a plain embed can't be paused from outside, so the button closes it
+      close(); return;
+    }
+    if(playing){ if(player.pauseVideo) player.pauseVideo(); setUI(false); }
+    else{ card.hidden=false; place(); if(player.playVideo) player.playVideo(); setUI(true); }
+  });
+  function close(){
+    clearTimeout(startTimer);
+    if(player&&player.destroy) player.destroy();
+    var fresh=document.createElement('div'); fresh.id='musicPlayer';
+    var frame=card.querySelector('.music-frame'); frame.innerHTML=''; frame.appendChild(fresh); slot=fresh;
+    player=null; plain=false; say(''); setUI(false); card.hidden=true;
+  }
+  document.getElementById('musicClose').addEventListener('click',close);
 })();
 </script>
 <script>

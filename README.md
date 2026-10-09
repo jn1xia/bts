@@ -37,6 +37,13 @@ Open `index.html` in a browser (it loads three.js r128 from cdnjs). The whole si
 - **Performers**: seven stand-in figures (generic, not likenesses) dance on the turntable, walk the
   runways to the corner stages, ride the lifts up and come back on an 80-second loop, each under a
   follow spot from the decks at the back of the upper tribune.
+- **Song**: the Song button in the dock plays [this video](https://youtu.be/RBaSiVjtKR4) in a small
+  player above the controls, on loop, while you look around. Nothing from YouTube loads until
+  someone presses Play, and it uses the privacy-enhanced `youtube-nocookie.com` player. The player
+  stays visible and at least 200 px tall, as YouTube's embed rules require. If the video's owner
+  turns off embedding, the card says so and links to YouTube instead. Phones may need a tap on
+  the video itself before the sound starts. To use another song, change `VIDEO_ID` in `index.html`
+  (and the YouTube link in the player card).
 - **Show / House lights**, **Clear / Rain** (late December is the rainy season in Jakarta; rain
   stays off the stands under the roof, and fans in the open put on ponchos), Jakarta's skyline
   around the stadium, and a D-day countdown to the next show.
