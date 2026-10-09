@@ -240,7 +240,7 @@ input[type=range]{width:100%;min-width:0;accent-color:var(--tape)}
         <h3 id="h-cats">Ticket categories</h3>
         <ul class="cats" id="catList"></ul>
       </section>
-      <p class="fine">Fan-made and unofficial; not affiliated with BIGHIT MUSIC, HYBE, iMe Indonesia, Live Nation or GBK. Categories, prices and where each category sits follow iMe Indonesia's seat map (prices exclude tax and admin fees; every category has numbered seats, and all three shows are sold out). The stage follows reviews of the tour: a 360° stage with a pavilion modelled on Gyeonghoeru at the centre and runways that recall the four trigrams of the Korean flag. Exact block edges, sector numbers, row counts, stage and screen sizes, and where the roof ends are <b>estimates</b>, so use the official map to confirm your seat. Performers are generic stand-ins, not likenesses.</p>
+      <p class="fine">Fan-made and unofficial; not affiliated with BIGHIT MUSIC, HYBE, iMe Indonesia, Live Nation or GBK. Categories, prices and where each category sits follow iMe Indonesia's seat map (prices exclude tax and admin fees; every category has numbered seats, and all three shows are sold out). The stage follows reviews of the tour: a 360° stage with a pavilion modelled on Gyeonghoeru at the centre and runways that recall the four trigrams of the Korean flag; photos from the Goyang shows show the ring of LED screens raised on truss towers above it. Exact block edges, sector numbers, row counts, stage and screen sizes, and where the roof ends are <b>estimates</b>, so use the official map to confirm your seat. Performers are generic stand-ins, not likenesses.</p>
     </div>
   </div>
 </aside>
@@ -750,10 +750,10 @@ const turn=new THREE.Mesh(new THREE.CircleGeometry(9.3,72).rotateX(-Math.PI/2),n
 turn.position.y=DECK+PLINTH+0.012; stageGroup.add(turn);
 
 /* Pavilion after Gyeonghoeru: lacquered pillars and a hipped-and-gabled roof with upturned eaves.
-   Four LED screens hang under it, one facing each side (their size and placement are estimates). */
-const PAV={px:13,pz:9,Y0:19.6,EX:19,EZ:14,lift:1.9,HX:12,HZ:4.5,Y1:25.4,YR:27.6};
+   It sits inside the screen ring, below the screens. */
+const PAV={px:8.5,pz:6.5,Y0:10.6,EX:12.5,EZ:9.5,lift:1.3,HX:8,HZ:3,Y1:13.9,YR:15.4};
 const lacquer=new THREE.MeshLambertMaterial({color:0x6b1a22});
-[[-PAV.px,-PAV.pz],[PAV.px,-PAV.pz],[PAV.px,PAV.pz],[-PAV.px,PAV.pz],[-4.5,-PAV.pz],[4.5,-PAV.pz],[-4.5,PAV.pz],[4.5,PAV.pz]].forEach(([x,z])=>{
+[[-PAV.px,-PAV.pz],[PAV.px,-PAV.pz],[PAV.px,PAV.pz],[-PAV.px,PAV.pz]].forEach(([x,z])=>{
   const h=PAV.Y0-DECK-PLINTH; box(0.8,h,0.8,x,DECK+PLINTH+h/2,z,lacquer,true);
   box(0.14,h-1,0.14,x,DECK+PLINTH+h/2,z+Math.sign(z)*0.42,stripMat);
 });
@@ -795,16 +795,10 @@ const eaveY=(t)=>PAV.Y0+PAV.lift*Math.pow(Math.abs(t),4); // t = -1..1 along an 
   }
   const bg=new THREE.BufferGeometry();bg.setAttribute('position',new THREE.Float32BufferAttribute(Q,3));bg.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2));
   stageGroup.add(new THREE.Mesh(bg,new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide})));
-  // hanging speaker arrays at the corners, and a lighting truss round the screens
-  [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([sx,sz])=>box(1.2,6.8,1.3,sx*(PAV.px+2.6),PAV.Y0-4.6,sz*(PAV.pz+2.4),blackMat,true));
-  const T=[],y=PAV.Y0-0.3,X=PAV.px+2,Z=PAV.pz+2;
-  [[-X,-Z,X,-Z],[X,-Z,X,Z],[X,Z,-X,Z],[-X,Z,-X,-Z]].forEach(e=>{T.push(e[0],y,e[1],e[2],y,e[3],e[0],y-0.7,e[1],e[2],y-0.7,e[3]);});
-  const tg=new THREE.BufferGeometry();tg.setAttribute('position',new THREE.Float32BufferAttribute(T,3));
-  stageGroup.add(new THREE.LineSegments(tg,new THREE.LineBasicMaterial({color:0x5a5a62})));
 })();
 
-/* LED screens: ink-wash mountains with a red sun, the title card on red tape, the taegeuk with
-   its trigrams, and red and white ribbons */
+/* LED screens: lavender ink-wash with brush strokes and lines of text (as in photos from the
+   tour), the title card on red tape, the taegeuk with its trigrams, and red and white ribbons */
 const titleCanvas=document.createElement('canvas'); titleCanvas.width=1024; titleCanvas.height=512;
 const titleTex=new THREE.CanvasTexture(titleCanvas);
 function drawTitle(){
@@ -830,11 +824,16 @@ function screenMaterial(aspect,seed){
       'precision highp float;varying vec2 vUv;uniform float uTime,uAspect,uShow,uSeed;uniform sampler2D uText;',
       'float h1(float x){return fract(sin(x*127.1)*43758.5453);}',
       'float n1(float x){float i=floor(x),f=fract(x);return mix(h1(i),h1(i+1.0),f*f*(3.0-2.0*f));}',
-      'vec3 sInk(vec2 uv,float t){vec3 paper=vec3(0.9,0.88,0.84);vec3 c=paper*(0.88+0.12*uv.y);',
+      'vec3 sInk(vec2 uv,float t){vec3 paper=vec3(0.82,0.76,0.95);vec3 c=paper*(0.88+0.12*uv.y);float px=uv.x*uAspect;',
       ' float sd=length((uv-vec2(0.7,0.7))*vec2(uAspect,1.0));c=mix(c,vec3(0.85,0.08,0.14),smoothstep(0.125,0.115,sd));',
       ' for(int i=0;i<4;i++){float fi=float(i);float x=uv.x*uAspect*(1.1+fi*0.55)+fi*13.7+t*0.03*(fi+1.0)+uSeed*3.0;',
       '  float hg=0.66-fi*0.13+0.2*(n1(x)*0.65+n1(x*2.3)*0.35)-0.1;float m=smoothstep(hg+0.004,hg-0.004,uv.y);',
       '  vec3 ink=vec3(0.62-fi*0.17);c=mix(c,mix(ink,paper,0.4*smoothstep(hg-0.3,hg,uv.y)*(1.0-fi*0.25)),m);}',
+      ' for(int k=0;k<2;k++){float fk=float(k);float x0=uAspect*(0.58+0.24*fk)+0.06*sin(uv.y*4.0+fk*2.3+t*0.25);',
+      '  float w=(0.015+0.045*(1.0-uv.y))*(0.75+0.5*n1(uv.y*30.0+fk*9.0));c=mix(c,vec3(0.05,0.04,0.07),smoothstep(w,w*0.55,abs(px-x0))*step(0.12,uv.y));}',
+      ' float rowi=floor((uv.y-0.3)/0.07);float ry=fract((uv.y-0.3)/0.07);',
+      ' float txt=step(0.0,rowi)*step(rowi,5.0)*step(px,uAspect*0.3)*step(0.04,uv.x)*step(0.35,ry)*step(ry,0.6)*step(0.4,h1(floor(px*28.0)+rowi*7.0+uSeed));',
+      ' c=mix(c,vec3(0.12,0.1,0.16),txt);',
       ' return c;}',
       'vec3 sTitle(vec2 uv){vec2 s=uAspect>=2.0?vec2(uAspect/2.0,1.0):vec2(1.0,2.0/uAspect);vec2 tu=(uv-0.5)*s*1.06+0.5;',
       ' float ins=step(0.0,tu.x)*step(tu.x,1.0)*step(0.0,tu.y)*step(tu.y,1.0);return texture2D(uText,tu).rgb*ins;}',
@@ -860,14 +859,42 @@ function screenMaterial(aspect,seed){
       ' gl_FragColor=vec4(c,1.0);}'
     ].join('\n')});
 }
-const SCR_Y=14.25,SCR_H=8.5;
-const SCREENS=[[0,-1,28],[1,0,20],[0,1,28],[-1,0,20]].map(([sx,sz,w],i)=>{
-  const rot=Math.atan2(sx,sz),c=new THREE.Vector3(sx*(PAV.px+0.95),SCR_Y,sz*(PAV.pz+0.95));
-  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,SCR_H),screenMaterial(w/SCR_H,i*1.7));
+/* The screens form a ring raised on black truss towers over the centre stage, as in photos from
+   the Goyang shows: eight faces in plan, the longer ones towards the B and D ends (the farthest
+   seats), shorter ones towards the A and C sides, and corner faces towards the runways. A lighting
+   truss runs along the top and speaker arrays hang beside the corner towers. Sizes are estimates. */
+const RING={x:19,z:23,cx:12,cz:16,y0:15,h:12};
+const RING_PTS=[[-RING.cx,-RING.z],[RING.cx,-RING.z],[RING.x,-RING.cz],[RING.x,RING.cz],[RING.cx,RING.z],[-RING.cx,RING.z],[-RING.x,RING.cz],[-RING.x,-RING.cz]];
+const FACE_NAMES=['A','A–B corner','B','B–C corner','C','C–D corner','D','A–D corner'];
+const SCR_Y=RING.y0+RING.h/2,SCR_H=RING.h,RING_TOP=RING.y0+RING.h;
+const SCREENS=RING_PTS.map((p,i)=>{
+  const q=RING_PTS[(i+1)%8],mx=(p[0]+q[0])/2,mz=(p[1]+q[1])/2,w=Math.hypot(q[0]-p[0],q[1]-p[1]);
+  let nx=(q[1]-p[1])/w,nz=-(q[0]-p[0])/w; if(nx*mx+nz*mz<0){nx=-nx;nz=-nz;}
+  const rot=Math.atan2(nx,nz),c=new THREE.Vector3(mx+nx*0.3,SCR_Y,mz+nz*0.3);
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,SCR_H),screenMaterial(w/SCR_H,i*1.3));
   m.position.copy(c); m.rotation.y=rot; stageGroup.add(m);
-  const b=box(w+0.4,SCR_H+0.4,0.5,c.x,c.y,c.z,blackMat,true); b.rotation.y=rot; b.translateZ(-0.32);
-  return {c,w,h:SCR_H,rot,n:new THREE.Vector3(sx,0,sz),side:'ABCD'[i],mesh:m};
+  const b=box(w+0.3,SCR_H+0.4,0.6,c.x,c.y,c.z,blackMat,true); b.rotation.y=rot; b.translateZ(-0.36);
+  return {c,w,h:SCR_H,rot,n:new THREE.Vector3(nx,0,nz),side:FACE_NAMES[i],mesh:m};
 });
+(function screenRig(){
+  const towers=RING_PTS.map(([x,z])=>{const l=Math.hypot(x,z);return [x-x/l*0.8,z-z/l*0.8];}).concat([[0,-RING.z+0.7],[0,RING.z-0.7],[-RING.x+0.7,0],[RING.x-0.7,0]]);
+  const H=RING_TOP+1.4-DECK,L=[],lightPos=[];
+  towers.forEach(([x,z])=>{
+    box(0.9,H,0.9,x,DECK+H/2,z,blackMat,true);
+    for(let y=DECK;y<DECK+H-1;y+=1.2){L.push(x-0.46,y,z-0.46,x+0.46,y+1.2,z+0.46,x+0.46,y,z-0.46,x-0.46,y+1.2,z+0.46);}
+  });
+  RING_PTS.forEach((p,i)=>{
+    const q=RING_PTS[(i+1)%8];
+    [RING_TOP+0.5,RING_TOP+1.3].forEach(y=>L.push(p[0],y,p[1],q[0],y,q[1]));
+    const n=Math.max(2,Math.round(Math.hypot(q[0]-p[0],q[1]-p[1])/2.2));
+    for(let k=0;k<=n;k++){const f=k/n;lightPos.push(p[0]+(q[0]-p[0])*f,RING_TOP+0.9,p[1]+(q[1]-p[1])*f);}
+    const l=Math.hypot(p[0],p[1]),a=box(1.1,8.5,1.3,p[0]*(1+1.4/l),RING_TOP-4.5,p[1]*(1+1.4/l),blackMat,true); a.rotation.y=Math.atan2(p[0],p[1]);
+  });
+  const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.Float32BufferAttribute(L,3));
+  stageGroup.add(new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0x4a4950})));
+  const pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.Float32BufferAttribute(lightPos,3));
+  stageGroup.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xfff6e8,size:0.55,sizeAttenuation:true})));
+})();
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(drawTitle);
 
 /* Production layout: black decks where seats are killed for FOH, cameras and follow spots,
@@ -938,8 +965,11 @@ function addBeam(x,y,z,len,radius,kind,phase,extra){
   const m=new THREE.Mesh(coneGeo(radius,len),mat); m.position.set(x,y,z); m.renderOrder=2; beamGroup.add(m);
   const b=Object.assign({m,kind,phase,x,y,z,gain:0.85},extra||{}); beams.push(b); return b;
 }
-for(let i=0;i<14;i++){const a=i/14*Math.PI*2,x=Math.cos(a)*(PAV.EX-0.6),z=Math.sin(a)*(PAV.EZ-0.6);addBeam(x,PAV.Y0-0.8,z,150,3.2,'out',i*0.9,{a,gain:0.4});}
-for(let i=0;i<6;i++) addBeam(-10+i*4,PAV.Y0-1.2,(i%2?1:-1)*3,24,3.2,'down',i*1.3);
+const ringPoint=(t)=>{const L=SCREENS.map(s=>s.w),tot=L.reduce((a,b)=>a+b,0);let d=t*tot;
+  for(let i=0;i<8;i++){if(d<=L[i]){const p=RING_PTS[i],q=RING_PTS[(i+1)%8],f=d/L[i];return {x:p[0]+(q[0]-p[0])*f,z:p[1]+(q[1]-p[1])*f};}d-=L[i];}
+  return {x:RING_PTS[0][0],z:RING_PTS[0][1]};};
+for(let i=0;i<16;i++){const p=ringPoint((i+0.5)/16);addBeam(p.x,RING_TOP+0.9,p.z,150,3.2,'out',i*0.9,{a:Math.atan2(p.z,p.x),gain:0.4});}
+for(let i=0;i<6;i++) addBeam(-7.5+i*3,PAV.Y0-1.0,(i%2?1:-1)*2.4,14,2.6,'down',i*1.3);
 ARMS.forEach((arm,i)=>{
   [-1,1].forEach(k=>addBeam(0,0,0,120,3.4,'lift',i*1.7+k,{lift:i,off:k*2.4}));
   [44,52].forEach((a,j)=>{const p=armPoint(arm,a,j?8.6:-2.6);addBeam(p.x,DECK+0.4,p.z,110,3.6,'up',i*2.1+j,{});});
@@ -948,7 +978,7 @@ const lasers=[];
 const laserMat=new THREE.MeshBasicMaterial({color:0xff2a48,transparent:true,opacity:0.65,blending:THREE.AdditiveBlending,depthWrite:false});
 for(let i=0;i<12;i++){
   const g=new THREE.BoxGeometry(0.07,0.07,190); g.translate(0,0,95);
-  const m=new THREE.Mesh(g,laserMat); m.position.set(Math.cos(i/12*6.283)*6,PAV.YR-0.6,Math.sin(i/12*6.283)*4); beamGroup.add(m); lasers.push({m,phase:i*0.53});
+  const m=new THREE.Mesh(g,laserMat); const v=RING_PTS[i%8]; m.position.set(v[0]*0.97,RING_TOP+1.4,v[1]*0.97); beamGroup.add(m); lasers.push({m,phase:i*0.53});
 }
 /* Follow spots from the decks at the back of the upper tribune, one per performer */
 const followSpots=[0,3,5,8,10,13,15].map(k=>{
@@ -1395,9 +1425,10 @@ function computeFacts(){
   const dCentre=Math.hypot(eyePos.x,eyePos.y-DECK-1.5,eyePos.z);
   let dCorner=Infinity,corner=0;
   LIFTS.forEach((p,i)=>{const d=Math.hypot(eyePos.x-p.x,eyePos.y-DECK,eyePos.z-p.z);if(d<dCorner){dCorner=d;corner=i;}});
-  const vis=SCREENS.map(s=>({s,v:screenVisibility(s),d:eyePos.distanceTo(s.c)})).sort((a,b)=>b.v-a.v||a.d-b.d);
-  const best=vis[0],cosA=Math.max(0,eyePos.clone().sub(best.s.c).normalize().dot(best.s.n));
-  const tvIn=best.s.w*cosA*2.5/best.d/0.8716/0.0254;
+  // the best screen is the one that looks biggest from here: visible share × width seen ÷ distance
+  const vis=SCREENS.map(s=>{const v=screenVisibility(s),d=eyePos.distanceTo(s.c),cosA=Math.max(0,eyePos.clone().sub(s.c).normalize().dot(s.n));
+    return {s,v,d,cosA,score:v*s.w*cosA/d};}).sort((a,b)=>b.score-a.score||a.d-b.d);
+  const best=vis[0],tvIn=best.s.w*best.cosA*2.5/best.d/0.8716/0.0254;
   const cover=state.sec.kind==='floor'?0:coverAt(seatD());
   return {dEdge,dCentre,dCorner,corner,height:eyePos.y,scrVis:best.v,scrSide:best.s.side,perfMM:1.75*600/dCentre,tvIn,cover};
 }
@@ -1408,7 +1439,7 @@ function verdictFor(f){
   else if(f.dCentre<120) out.push('The members look small at the centre, so the screens carry the close-ups.');
   else out.push('High and far: you take in the screens and the whole lightstick ocean at once.');
   if(f.dCorner<f.dCentre*0.62) out.push('The '+CORNER_NAMES[f.corner]+' corner stage is '+Math.round(f.dCorner)+' m away, so the members come much closer when they ride its lift.');
-  if(f.scrVis===0) out.push('No screen faces this seat squarely, so you see them at an angle.');
+  if(f.scrVis===0) out.push(f.dEdge<14?'You are too close for the screens, which hang high over the stage, but you see the members directly.':'No screen faces this seat squarely, so you see them at an angle.');
   else if(f.scrVis<0.75) out.push('Part of the nearest screen is blocked from here.');
   if(s.kind==='floor'&&state.row>=8) out.push('The floor is flat, so when everyone stands the heads in front hide more of the stage.');
   if(s.cat==='VIP') out.push('The VIP package also gets you into the soundcheck.');
@@ -1512,6 +1543,7 @@ const mapSecs={};
   shapes.forEach(d=>{el('path',{d},outline);el('path',{d},deck);});
   el('rect',{x:-14.2,y:-10.2,width:28.4,height:20.4,fill:'none',stroke:'#3d3c44','stroke-width':0.8},svg);
   el('circle',{r:9.3,fill:'none',stroke:'#6b6670','stroke-width':0.8},svg);
+  el('path',{d:'M'+RING_PTS.map(p=>p.join(' ')).join('L')+'Z',fill:'none',stroke:'#cfcad3','stroke-width':0.7,'stroke-dasharray':'2 1.4'},svg);
   el('text',{x:0,y:2.2,'text-anchor':'middle','font-size':6.2,'font-weight':600,fill:'#f1eef0','letter-spacing':1.2},svg).textContent='STAGE';
   [[-84,-10],[-85,0],[-84,10],[85,-10],[86,0],[85,10],[0,-51.4],[0,51.4]].forEach(([x,z])=>el('rect',{x:x-1.4,y:z-1.1,width:2.8,height:2.2,fill:'#050506'},svg));
   FLOOR_DEF.forEach(f=>{const xs=f.poly.map(p=>p[0]),zs=f.poly.map(p=>p[1]);
@@ -1560,7 +1592,7 @@ function updatePanel(){
   setStat('s-centre',Math.round(f.dCentre)+' m<small>to the pavilion</small>');
   setStat('s-corner',Math.round(f.dCorner)+' m<small>to the '+CORNER_NAMES[f.corner]+' corner stage</small>');
   setStat('s-height',f.height.toFixed(1)+' m<small>eye level above the floor</small>');
-  setStat('s-screen',pct(f.scrVis)+'<div class="meter"><span style="width:'+pct(f.scrVis)+'"></span></div><small>best screen: side '+f.scrSide+'</small>');
+  setStat('s-screen',pct(f.scrVis)+'<div class="meter"><span style="width:'+pct(f.scrVis)+'"></span></div><small>best screen: '+(f.scrSide.length===1?'side '+f.scrSide:f.scrSide)+'</small>');
   setStat('s-tv',f.scrVis>0?Math.round(f.tvIn)+'″ TV<small>seen from 2.5 m away</small>':'—<small>no screen faces you</small>');
   setStat('s-perf',(f.perfMM<10?f.perfMM.toFixed(1):Math.round(f.perfMM))+' mm<small>a 1.75 m member at the centre, at arm’s length</small>');
   setStat('s-rain',['Open<small>no roof over this seat</small>','Edge<small>at the edge of the ring roof</small>','Roof<small>under GBK’s ring roof</small>'][f.cover]);

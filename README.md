@@ -18,8 +18,13 @@ Open `index.html` in a browser (it loads three.js r128 from cdnjs). The whole si
 - **Stage**: the 360° stage described in reviews of the tour, with a pavilion modelled on
   Gyeonghoeru (hipped-and-gabled roof with upturned eaves and a dancheong band) over a turntable
   with a taegeuk LED floor. Four runways narrow in steps to lifting corner stages, and their LED
-  strips are solid or broken like the trigram in that corner of the Korean flag. Four LED screens
-  hang under the roof, one facing each side.
+  strips are solid or broken like the trigram in that corner of the Korean flag.
+- **Screens**: as in photos from the Goyang shows, a ring of LED screens stands on black truss
+  towers high above the centre stage (about 15–27 m up here), with a lighting truss along the top
+  and speaker arrays hanging beside the corner towers. In plan it has eight faces: 32 m wide
+  towards the B and D ends (the farthest seats), 24 m towards the A and C sides, and corner faces
+  towards the runways. They show lavender ink-wash with brush strokes and lines of text, the title
+  card, the taegeuk, and ribbons. The seat panel picks the face that looks biggest from your seat.
 - **Crowd**: every seat is sold. Fans near you are jointed figures at two levels of detail, in
   tour tees and everyday colours, some in bucket hats. Most hold an ARMY Bomb Ver. 4 (clear globe
   on a slim handle). About 8% hold up printed slogan banners ("BORAHAE", "SELAMAT DATANG",
